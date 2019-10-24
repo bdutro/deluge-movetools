@@ -40,8 +40,8 @@
 
 from deluge.plugins.pluginbase import WebPluginBase
 
-from common import MODULE_NAME
-from common import get_resource
+from .common import MODULE_NAME
+from .common import get_resource
 
 
 class WebUI(WebPluginBase):

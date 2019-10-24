@@ -42,7 +42,7 @@ from setuptools import setup
 __plugin_name__ = "MoveTools"
 __author__ = "Ratanak Lun"
 __author_email__ = "ratanakvlun@gmail.com"
-__version__ = "0.2.0.2"
+__version__ = "0.2.0.3"
 __url__ = "http://github.com/ratanakvlun"
 __license__ = "GPLv3"
 __description__ = "Tools for moving torrents"
@@ -65,8 +65,8 @@ setup(
     entry_points="""
     [deluge.plugin.core]
     %s = %s:CorePlugin
-    [deluge.plugin.gtkui]
-    %s = %s:GtkUIPlugin
+    [deluge.plugin.gtk3ui]
+    %s = %s:Gtk3UIPlugin
     [deluge.plugin.web]
     %s = %s:WebUIPlugin
     """ % ((__plugin_name__, __plugin_name__.lower())*3)

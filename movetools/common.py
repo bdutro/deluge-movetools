@@ -41,7 +41,9 @@
 import copy
 import os
 import pkg_resources
+import gettext
 
+_ = gettext.gettext
 
 PLUGIN_NAME = "MoveTools"
 MODULE_NAME = "movetools"
@@ -58,7 +60,7 @@ def get_resource(filename):
 
 def normalize_dict(dict_in, template):
 
-  for key in dict_in.keys():
+  for key in list(dict_in.keys()):
     if key not in template:
       del dict_in[key]
 

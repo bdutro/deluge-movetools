@@ -52,11 +52,11 @@ import deluge.configmanager
 from deluge.core.rpcserver import export
 from deluge.core.torrent import Torrent
 
-from common import PLUGIN_NAME
-from common import MODULE_NAME
-from common import STATUS_NAME
-from common import STATUS_MESSAGE
-from common import normalize_dict
+from .common import PLUGIN_NAME
+from .common import MODULE_NAME
+from .common import STATUS_NAME
+from .common import STATUS_MESSAGE
+from .common import normalize_dict
 
 
 CONFIG_FILE = "%s.conf" % MODULE_NAME
@@ -176,7 +176,7 @@ class Core(CorePluginBase):
 
     self.initialized = False
 
-    if not deluge.component.get("TorrentManager").session_started:
+    if deluge.component.get("TorrentManager").get_state() != 'Started':
       deluge.component.get("EventManager").register_event_handler(
         "SessionStartedEvent", self._on_session_started)
       log.debug("[%s] Waiting for session to start...", PLUGIN_NAME)
@@ -237,6 +237,7 @@ class Core(CorePluginBase):
     component.get("CorePluginManager").register_status_field(STATUS_MESSAGE,
       self.get_move_message)
 
+    log.debug("Registering filter %s: %s", STATUS_NAME, str(INIT_FILTERS()))
     component.get("FilterManager").register_tree_field(STATUS_NAME,
       INIT_FILTERS)
 
@@ -307,7 +308,7 @@ class Core(CorePluginBase):
   @export
   def clear_all_status(self):
     log.debug("[%s] Clearing all status results", PLUGIN_NAME)
-    for id in self.torrents.keys():
+    for id in list(self.torrents.keys()):
       if self.torrents[id].status not in ALIVE_STATUS:
         self._remove_job(id)
 
@@ -360,13 +361,13 @@ class Core(CorePluginBase):
 
   def get_move_status(self, id):
     if id not in self.torrents:
-      return None
+      return 'Done'
 
     return self.torrents[id].status
 
   def get_move_message(self, id):
     if id not in self.torrents:
-      return None
+      return 'Done'
 
     return self.torrents[id].message
 

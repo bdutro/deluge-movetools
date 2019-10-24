@@ -38,24 +38,26 @@
 #
 
 
+import gettext
 import logging
 
-import gtk
-import gtk.glade
+from gi.repository import Gtk
 
 from twisted.internet import reactor
 
 from deluge.ui.client import client
-from deluge.plugins.pluginbase import GtkPluginBase
+from deluge.plugins.pluginbase import Gtk3PluginBase
 import deluge.component as component
 
-from common import PLUGIN_NAME
-from common import MODULE_NAME
-from common import DISPLAY_NAME
-from common import STATUS_NAME
-from common import STATUS_MESSAGE
-from common import get_resource
-from common import dict_equals
+from .common import PLUGIN_NAME
+from .common import MODULE_NAME
+from .common import DISPLAY_NAME
+from .common import STATUS_NAME
+from .common import STATUS_MESSAGE
+from .common import get_resource
+from .common import dict_equals
+
+_ = gettext.gettext
 
 INIT_POLLING_INTERVAL = 3.0
 
@@ -63,7 +65,7 @@ INIT_POLLING_INTERVAL = 3.0
 log = logging.getLogger(__name__)
 
 
-class GtkUI(GtkPluginBase):
+class GtkUI(Gtk3PluginBase):
 
   def enable(self):
     log.debug("[%s] Enabling GtkUI...", PLUGIN_NAME)
@@ -84,16 +86,16 @@ class GtkUI(GtkPluginBase):
 
     self.config = {}
 
-    self.ui = gtk.glade.XML(get_resource("wnd_preferences.glade"))
+    self.ui = Gtk.Builder.new_from_file(get_resource("wnd_preferences.ui"))
 
-    lbl = self.ui.get_widget("lbl_general")
+    lbl = self.ui.get_object("lbl_general")
     lbl.set_markup("<b>%s</b>" % lbl.get_text())
 
-    lbl = self.ui.get_widget("lbl_timeout")
+    lbl = self.ui.get_object("lbl_timeout")
     lbl.set_markup("<b>%s</b>" % lbl.get_text())
 
     component.get("Preferences").add_page(
-        DISPLAY_NAME, self.ui.get_widget("blk_preferences"))
+        DISPLAY_NAME, self.ui.get_object("blk_preferences"))
     component.get("PluginManager").register_hook(
         "on_apply_prefs", self._do_save_settings)
     component.get("PluginManager").register_hook(
@@ -134,12 +136,12 @@ class GtkUI(GtkPluginBase):
     config = {
       "general": {
         "estimated_speed":
-          self.ui.get_widget("spn_estimated_speed").get_value(),
-        "remove_empty": self.ui.get_widget("chk_remove_empty").get_active(),
+          self.ui.get_object("spn_estimated_speed").get_value(),
+        "remove_empty": self.ui.get_object("chk_remove_empty").get_active(),
       },
       "timeout": {
-        "success": self.ui.get_widget("spn_success_timeout").get_value(),
-        "error": self.ui.get_widget("spn_error_timeout").get_value(),
+        "success": self.ui.get_object("spn_success_timeout").get_value(),
+        "error": self.ui.get_object("spn_error_timeout").get_value(),
       },
     }
 
@@ -155,41 +157,41 @@ class GtkUI(GtkPluginBase):
   def _do_load(self, config):
     self.config = config
 
-    spn = self.ui.get_widget("spn_estimated_speed")
+    spn = self.ui.get_object("spn_estimated_speed")
     spn.set_value(config["general"]["estimated_speed"])
-    chk = self.ui.get_widget("chk_remove_empty")
+    chk = self.ui.get_object("chk_remove_empty")
     chk.set_active(config["general"]["remove_empty"])
 
-    spn = self.ui.get_widget("spn_success_timeout")
+    spn = self.ui.get_object("spn_success_timeout")
     spn.set_value(config["timeout"]["success"])
-    spn = self.ui.get_widget("spn_error_timeout")
+    spn = self.ui.get_object("spn_error_timeout")
     spn.set_value(config["timeout"]["error"])
 
   def _create_menu(self):
-    menu = gtk.MenuItem(DISPLAY_NAME)
-    submenu = gtk.Menu()
+    menu = Gtk.MenuItem(DISPLAY_NAME)
+    submenu = Gtk.Menu()
 
-    move_item = gtk.MenuItem(_("Move"))
-    move_submenu = gtk.Menu()
+    move_item = Gtk.MenuItem(_("Move"))
+    move_submenu = Gtk.Menu()
     move_item.set_submenu(move_submenu)
 
-    item = gtk.MenuItem(_("Move Completed"))
+    item = Gtk.MenuItem(_("Move Completed"))
     item.connect("activate", self._do_move_completed)
     move_submenu.append(item)
 
-    item = gtk.MenuItem(_("Cancel Pending"))
+    item = Gtk.MenuItem(_("Cancel Pending"))
     item.connect("activate", self._do_cancel_pending)
     move_submenu.append(item)
 
-    status_item = gtk.MenuItem(_("Status"))
-    status_submenu = gtk.Menu()
+    status_item = Gtk.MenuItem(_("Status"))
+    status_submenu = Gtk.Menu()
     status_item.set_submenu(status_submenu)
 
-    item = gtk.MenuItem(_("Clear"))
+    item = Gtk.MenuItem(_("Clear"))
     item.connect("activate", self._do_clear_selected)
     status_submenu.append(item)
 
-    item = gtk.MenuItem(_("Clear All"))
+    item = Gtk.MenuItem(_("Clear All"))
     item.connect("activate", self._do_clear_all)
     status_submenu.append(item)
 
@@ -220,7 +222,7 @@ class GtkUI(GtkPluginBase):
     client.movetools.clear_all_status()
 
   def _add_column(self):
-    renderer = gtk.CellRendererProgress()
+    renderer = Gtk.CellRendererProgress()
 
     component.get("TorrentView").add_column(
       header=STATUS_NAME,
